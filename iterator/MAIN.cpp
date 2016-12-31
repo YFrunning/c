@@ -133,15 +133,7 @@ public:
 		return Iterator(mfirst+mlast);
 	}
 	
-	void operator()(T val)
-	{
-		push_back(val);
-	}
-	/*T *operator*()
-	{
-		mfirst = new T[1];
-		return mfirst;
-	}*/
+	
 private:
 	void resize()
 	{
@@ -301,31 +293,33 @@ void mycopy(IputIterator first,IputIterator last,OutIterator des)//des iterator
 		++first;
 	}
 }
-template <typename Compare>  //Compare 是Vector
+//===================插入型迭代=========================================
+template <typename Container>  //Compare 是Vector
 class _my_back_insert_iterator  //迭代器
 {
 public:
-	_my_back_insert_iterator(Compare &cop):comp(cop){}
+	_my_back_insert_iterator(Container &cop):comp(cop){}
 		
-	_my_back_insert_iterator operator++(int)
+	_my_back_insert_iterator<Container>& operator++(int)
 	{
 		return *this;
 	}
-	_my_back_insert_iterator operator*()
+	_my_back_insert_iterator<Container>& operator*()
 	{
 		return  *this;
     }
-	void operator=(typename Compare:: val_type  val) //src为一个迭代器
+	_my_back_insert_iterator<Container>& operator=(typename Container:: val_type  &val) //src为一个迭代器
 	{
-		comp(val);
+		comp.push_back(val);
+		return *this;
 	}
 private:
-	Compare &comp;
+	Container &comp;
 };
-template <typename Compare>
-_my_back_insert_iterator<Compare>  my_back_insert_iterator(Compare &comp) //_my_back_insert_iterator<Compare> 应为迭代器
+template <typename Container>
+_my_back_insert_iterator<Container>  my_back_insert_iterator(Container &comp) //_my_back_insert_iterator<Compare> 应为迭代器
 {
-	return _my_back_insert_iterator<Compare>(comp);
+	return _my_back_insert_iterator<Container>(comp);
 }
 //======================泛型算法find_if(按条件寻找)===========================
 template <typename IputIterator,typename Compare>
@@ -449,5 +443,6 @@ int main()
 	mycopy(vec.begin(),vec.end(),my_back_insert_iterator(newVec)); 
 	//newVec 容器  my_back_insert_iterator(newVec) 迭代器
 	cout<<newVec<<endl;
+	//vector库中的插入方式只有两个push_back()/insert(iterator,pos);
 	return 0;
 }
