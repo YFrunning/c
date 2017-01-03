@@ -7,6 +7,11 @@ using namespace std;
 class CHeapManager
 {
 public:
+	static CHeapManager &getIntance()
+	{
+		 static CHeapManager cm;
+		 return cm;
+	}
 	void addRef(void *ptr)
 	{
 		vector<ResItem>::iterator it = find(_vec.begin(),_vec.end(),ptr);
@@ -82,13 +87,14 @@ public:
 		return -1;*/
 	}
 private:
+    CHeapManager(){}
 	struct ResItem
 	{
 		ResItem(void *paddr = NULL):_paddr(paddr),_refcount(0)
 		{
 			if(_paddr != NULL)
 			{
-				_refcount++;
+				_refcount = 1;
 			}
 		}
 		bool operator==(const ResItem &src)
@@ -115,6 +121,7 @@ class CSmartptr
 public:
 	CSmartptr(T *ptr = NULL):_ptr(ptr)//,owns(true){}
 	{
+		if(ptr != NULL)
 		addRef();
 	}
 	~CSmartptr()
@@ -162,20 +169,21 @@ public:
 private:
 	//bool owns;
 	T *_ptr;//auto
-	static CHeapManager _heapManager;
+	static CHeapManager &_heapManager;
 };
 template<typename T>
-CHeapManager CSmartptr<T>::_heapManager;
+CHeapManager& CSmartptr<T>::_heapManager = CHeapManager::getIntance();
 int main()
 {
-	/*int *p = new int;
+	int *p = new int;
 	CSmartptr<int> p1(p);
-	CSmartptr<char> p2((char*)p);*/
+	CSmartptr<char> p2((char*)p);
 	
-	CSmartptr<int> p1(new int);//站上对象，出了函数作用域就自动析构的特点，智能指针不能出现在堆上。（智能能指针都是站上的）
-	//*p1 = 100;
-	CSmartptr<test> p2(new test);
-	//p2->func();
-	CSmartptr<int> p3(p1);
+	CSmartptr<double> p3((double *)p);
+	//CSmartptr<int> p1(new int);//站上对象，出了函数作用域就自动析构的特点，智能指针不能出现在堆上。（智能能指针都是站上的）
+	////*p1 = 100;
+	//CSmartptr<test> p2(new test);
+	////p2->func();
+	//CSmartptr<int> p3(p1);
 	return 0;
 }
