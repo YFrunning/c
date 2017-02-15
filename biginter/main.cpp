@@ -184,8 +184,25 @@ BigInteger operator-(const BigInteger &left, const BigInteger &right)
 		}
 		while(i >= 0)
 		{
-			res.push(left._number[i]-flag);
-			flag = 0;
+			int num = left._number[i]-flag-'0';
+			if(num < 0 )
+			{
+				if(left._number[i]-'0'==0)
+				{
+					res.push( 10+'0'-flag);
+					flag = 1;
+				}
+				else
+				{
+					res.push( 10+'0'-flag);
+					flag = 1;
+				}	
+			}
+			else
+			{
+				flag = 0;
+				res.push(num+'0'-flag);
+			}
 			--i;
 		}
 	}
@@ -219,6 +236,14 @@ ostream & operator<<(ostream &out,const BigInteger &src)
 }
 int main()
 {
+	/*
+	连续借位：10000-9= 9991；
+	连续进位：9999+1= 10000;
+	大数加法：23761798265789632409851927836478916279384+6756857986094375190283749126412347861297834=
+	          6780619784360164822693601054248826777577218
+	大数减法：7892136478712036589789347438971627836487125478-907987897213894782174234=
+	          7892136478712036589788439451074413941704951244
+	*/
 	string le = "7892136478712036589789347438971627836487125478";
 	string ri = "907987897213894782174234";
 	BigInteger left(le);
