@@ -1,7 +1,8 @@
 #include<iostream>
 using namespace std;
-//è¿™é‡Œé¢æœ‰æˆ‘åœ¨CDSNé‡Œé¢çš„ä¸€ä¸ªå›¾ç‰‡
-//http://blog.csdn.net/qq_35256722/article/details/70230118
+
+//C++°æ
+
 template <typename KeyType>
 class AVLTree
 {
@@ -42,8 +43,8 @@ private:
 		}
 		else
 		{
-			//å¦‚æœæ˜¯å³å­©å­
-			while(s != NULL && s->leftchild != p)//ä¸æ˜¯å·¦å­©å­ï¼Œé‚£å°±æ˜¯å³å­©å­
+			//Èç¹ûÊÇÓÒº¢×Ó
+			while(s != NULL && s->leftchild != p)//²»ÊÇ×óº¢×Ó£¬ÄÇ¾ÍÊÇÓÒº¢×Ó
 			{
 				p = s;
 				s = s->parent;
@@ -52,7 +53,7 @@ private:
 		}
 
 	}
-	static bool insert(AVLNode *&ptr,const KeyType kx,AVLNode *pa)
+	static bool insert(AVLNode *&ptr,const KeyType kx,AVLNode *pa,int &taller)
 	{
 		bool res = false;
 		if(ptr == NULL)
@@ -63,42 +64,54 @@ private:
 			ptr->balance = 0;
 			ptr->leftchild = NULL;
 			ptr->rightchild = NULL;
+			taller = 1;//¼ÇÂ¼ÊÇ·ñĞèÒªµ÷½ÚÆ½ºâµÄ±äÁ¿
 			res = true;
 		}
 		else
 		{   
 			if(ptr->key >kx)
 			{
-				res = insert(ptr->leftchild,kx,ptr);
-				switch(ptr->balance)
+				res = insert(ptr->leftchild,kx,ptr,taller);
+				if(res && taller == 1)
 				{
-				case 0:
-					ptr->balance = -1;
-					break;
-				case 1:
-					ptr->balance = 0;
-					break;
-				case -1:
-					ptr->balance = -2;
-					LeftBalance(ptr);
-					break;
+					switch(ptr->balance)
+					{
+					case 0:
+						ptr->balance = -1;
+						break;
+					case 1:
+						taller = 0;//ÒÑ¾­Æ½ºâ£¬ÎŞĞèµ÷½Ú
+						ptr->balance = 0;
+						break;
+					case -1:
+						//ptr->balance = -2;
+						LeftBalance(ptr);
+						taller = 0;
+						break;
+					}
 				}
+				
 			}
 			else if(ptr->key < kx)
 			{
-				res = insert(ptr->rightchild,kx,ptr);
-				switch(ptr->balance)
+				res = insert(ptr->rightchild,kx,ptr,taller);
+				if(res && taller == 1)
 				{
-				case 0:
-					ptr->balance = 1;
-					break;
-				case -1:
-					ptr->balance = 0;
-					break;
-				case 1:
-					ptr->balance = 2;
-					RightBalance(ptr);
-					break;
+					switch(ptr->balance)
+					{
+					case 0:
+						ptr->balance = 1;
+						break;
+					case -1:
+						ptr->balance = 0;
+						taller = 0;
+						break;
+					case 1:
+						//ptr->balance = 2;
+						RightBalance(ptr);
+						taller = 0;
+						break;
+					}
 				}
 			}
 		}
@@ -125,13 +138,13 @@ private:
 		{
 			res = ReMove(ptr->rightchild,kx);
 		}
-		else if(ptr->leftchild != NULL && ptr->rightchild != NULL) //åˆ é™¤åŒåˆ†æ”¯ï¼ˆç‹¸çŒ«æ¢å¤ªå­ï¼‰
+		else if(ptr->leftchild != NULL && ptr->rightchild != NULL) //É¾³ıË«·ÖÖ§£¨ÀêÃ¨»»Ì«×Ó£©
 		{
 			AVLNode *s = Next(ptr);
 			ptr->key = s->key;
 			res = ReMove(ptr->rightchild,s->key);
 		}
-		else//åˆ é™¤å•åˆ†æ”¯  å¶å­ç»“ç‚¹   æ ¹
+		else//É¾³ıµ¥·ÖÖ§  Ò¶×Ó½áµã   ¸ù
 		{
 			AVLNode *child = ptr->leftchild != NULL ? ptr->leftchild : ptr->rightchild;
 			AVLNode *pa = ptr->parent;
@@ -145,6 +158,10 @@ private:
 			{
 				pa->rightchild = child;
 			}*/
+			if(pa->leftchild == ptr)
+				pa->balance = ptr->balance+1;
+			else if(pa->rightchild == ptr)
+				pa->balance = ptr->balance-1;
 			freeNode(ptr);
 			ptr = child;
 			res = true;
@@ -152,8 +169,8 @@ private:
 
 		return res;
 	} 
-	//AVLæ ‘çš„å·¦æ—‹å’Œå³æ—‹
-	//å³æ—‹
+	//AVLÊ÷µÄ×óĞıºÍÓÒĞı
+	//ÓÒĞı
 	static void RotateRigth(AVLNode *&ptr)
 	{
 
@@ -170,7 +187,7 @@ private:
 		ptr = p;
 
 	}
-	//å³æ—‹
+	//ÓÒĞı
 	static void RotateLeft(AVLNode *& ptr)
 	{
 		AVLNode *p = ptr->rightchild;
@@ -184,7 +201,7 @@ private:
 		ptr->parent = p;
 		ptr = p;
 	}
-	//å³è¾¹è°ƒå¹³è¡¡ ï¼ˆå‡è®¾å³è¾¹å·²ç»å¹³å’Œè¡¡äº†ï¼‰
+	//ÓÒ±ßµ÷Æ½ºâ £¨¼ÙÉèÓÒ±ßÒÑ¾­Æ½ºÍºâÁË£©
 	static void LeftBalance(AVLNode *&ptr)
 	{
 		if(ptr == NULL) return ;
@@ -206,12 +223,12 @@ private:
 				ptr->balance = 0;
 				leftsub->balance = 0;
 				break;
-			case 1://åŠ åœ¨Gçš„ä½ç½®
+			case 1://¼ÓÔÚGµÄÎ»ÖÃ
 			     ptr->balance = 0;
 				 leftsub->balance = -1;
 				 break;
 				 
-			case -1://åŠ åœ¨Fçš„ä½ç½®
+			case -1://¼ÓÔÚFµÄÎ»ÖÃ
 				ptr->balance = 1;
 				leftsub->balance = 0;
 				break;
@@ -222,7 +239,7 @@ private:
 			break;
 		}
 	}
-	//å³è¾¹è°ƒå¹³
+	//ÓÒ±ßµ÷Æ½
 	static void RightBalance(AVLNode *&ptr)
 	{
 		if(ptr == NULL) return ;
@@ -259,22 +276,33 @@ private:
 			break;
 		}
 	}
+	
 public:
 	AVLTree():root(NULL){}
 	~AVLTree(){}
-	//C++ æ’å…¥èŠ‚ç‚¹
-	bool insert(const KeyType kx)
+	//C++ ²åÈë½Úµã
+	bool insert(const KeyType kx,int &h)
 	{
-		return insert(root,kx,NULL);
+		return insert(root,kx,NULL,h);
 	}
 	void Midinder()const
 	{
 		return Midinder(root);
 	}
-	//C++åˆ é™¤èŠ‚ç‚¹
+	//C++É¾³ı½Úµã
 	bool  ReMove(const KeyType kx)
 	{
           return ReMove(root,kx);
+	}
+	//É¾³ı½Úµã
+	bool ReMove1(KeyType kx)
+	{
+		bool res = ReMove(root,kx);
+		if(!res ) return false;
+		//µ÷½ÚÆ½ºâ
+		LeftBalance(root);
+		RightBalance(root);
+        return res;
 	}
 };
 
@@ -282,22 +310,23 @@ int main()
 {
 	AVLTree<int> mytree;
 	//int  str[] = {53,17,78,9,45,65,87,24,81,97,89,53,87};
-	int str[] = {24,17,9};
+	int str[] = {16,3,7,11,9,26,18,14,15};//{24,17,9,10,19,36};
 	int len = sizeof(str)/sizeof(str[0]);
-
+    int h = 0;
 	for(int i = 0;i < len;++i)
 	{
-		mytree.insert(str[i]);
+		mytree.insert(str[i],h);
 	}
 	cout<<endl;
 	mytree.Midinder();
-	//int i = 0;
-	//while(cin>>i,i != -1)
-	//{
-	//	//s = search(root,i);
-	//	mytree.ReMove(i);
-	//	mytree.Midinder();
-	//}
+
+	int i = 0;
+	while(cin>>i,i != -1)
+	{
+		//s = search(root,i);
+		mytree.ReMove1(i);
+		mytree.Midinder();
+	}
    
 	return 0;
 }
